@@ -2,6 +2,8 @@
 using Client.Services.Network.Utilits;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Client.Services.Network
 {
@@ -27,11 +29,13 @@ namespace Client.Services.Network
         #region Properties
 
         #region Profile Info
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Login { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public string UserName { get; set; }
+        public string NickName { get; set; }
+
+        public List<Guid> Friends { get; set; } = new List<Guid>();
         public string IP { get; set; }
         #endregion
         public string ServerAddress { get; set; }
@@ -39,7 +43,7 @@ namespace Client.Services.Network
 
         public bool IsConnected { get; set; }
 
-        private string _file_path_transfer { get; set; }
+        private string _file_path_transfer = "E:\\Курсова\\Client\\Client\\Client\\Services\\FileSend\\FileBuff";
         private int file_port = 63001;
         #endregion
 
@@ -67,7 +71,7 @@ namespace Client.Services.Network
                 Console.WriteLine("Socket Exception");
                 return;
             }
-            Data data = new(Command.Auth, "Client", "Server", IP, email + " " + password);
+            Data data = new(Command.Auth, "Client", "Server", IP, email + " " + CreateMD5(password));
             SendComamnd(data);
         }
 
@@ -88,7 +92,7 @@ namespace Client.Services.Network
                 Console.WriteLine("Socket Exception");
                 return;
             }
-            Data data = new(Command.Auth, "Client", "Server", IP, login + " " + password + " " + nickName + " " + email + " " + birthday.ToString());
+            Data data = new(Command.Reg, "Client", "Server", IP, login + " " + CreateMD5(password) + " " + nickName + " " + email + " " + birthday.ToString());
             SendComamnd(data);
         }
         #endregion
@@ -109,7 +113,8 @@ namespace Client.Services.Network
                 return null;
             var random = new Random();
             var endPoint = new IPEndPoint(ipAddress, random.Next(65000, 65536));
-            IP = $"{endPoint.Address}:{endPoint.Port}";
+            IP = "127.0.0.1";
+            //IP = $"{endPoint.Address}:{endPoint.Port}";
             return endPoint;
         }
 
@@ -151,7 +156,7 @@ namespace Client.Services.Network
                 var bytesRead = handler.EndReceive(ar);
                 if (bytesRead <= 0)
                     return;
-                //ParseMessage(Data.GetBytes(state.Buffer));
+                ParseMessage(Data.GetBytes(state.Buffer));
 
                 server.Client.BeginReceive(state.Buffer, 0, ChatHelper.StateObject.BUFFER_SIZE, 0, OnReceive, state);
             }
@@ -162,18 +167,26 @@ namespace Client.Services.Network
             }
         }
 
-
-        public void OnUdpRecieve(IAsyncResult ar)
+        private void ParseMessage(Data data)
         {
+            if (data.Command == Command.Good_Auth)
+            {
+                Console.WriteLine(data.Command.ToString());
+            }
+            else if (data.Command == Command.Bad_Auth)
+            {
+                Console.WriteLine(data.Command.ToString());
+            }
+            else if (data.Command == Command.Good_Reg)
+            {
+                Console.WriteLine(data.Command.ToString());
+            }
+            else if (data.Command == Command.Bad_Reg)
+            {
+                Console.WriteLine(data.Command.ToString());
+            }
         }
 
-        //public void ParseMessage(Data data)
-        //{
-        //    switch (data.Command)
-        //    {
-
-        //    }
-        //}
         private string ParseFileExtension(string fileName)
         {
             return System.IO.Path.GetExtension(fileName);
@@ -199,16 +212,34 @@ namespace Client.Services.Network
         public void SendFile(string filename, int friend_ID)
         {
             Data data = new(Command.Accept_File, Id.ToString(), friend_ID.ToString(), IP, filename);
+            SendComamnd(data);
             FileTool.SendFile(_file_path_transfer, file_port);
         }
         public void CloseConnection()
         {
             IsConnected = false;
 
-            //var data = new Data { Command = Command.Disconnect };
-            //if (server.Client.Connected)
-            //    server.Client.Send(data.ToByte());
+            var data = new Data(Command.Disconnect, Id.ToString(), "Server", IP, "");
+            if (server.Client.Connected)
+                server.Client.Send(data.ToBytes());
         }
         #endregion
+
+        static string CreateMD5(string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    stringBuilder.Append(hashBytes[i].ToString("x2"));
+                }
+                return stringBuilder.ToString();
+            }
+        }
     }
 }
