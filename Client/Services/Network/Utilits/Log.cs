@@ -23,14 +23,6 @@
 
 
         #region Methods
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entity">Entity</param>
-        /// <param name="msg">Custom message</param>
-        /// <param name="e">Event</param>
-        /// <returns></returns>
         public static string Message(string entity, string msg, string e)
         {
             return string.Format("{0} {1} {2}", entity, msg, e);

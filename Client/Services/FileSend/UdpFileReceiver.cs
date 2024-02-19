@@ -285,7 +285,7 @@ namespace UDP_SENDER_FILE_TEST
                         throw new Exception("Checksum of uncompressed blocks doesn't match that of INFO packet.");
 
                     uncompressedStream.Position = 0;
-                    using (FileStream fileStream = new FileStream("E:\\Курсова\\Client\\Client\\Client\\Services\\FileSend\\FileBuff" + filename, FileMode.Create))
+                    using (FileStream fileStream = new FileStream("C:\\Users\\admin1\\Desktop\\Test\\" + filename, FileMode.Create))
                         uncompressedStream.CopyTo(fileStream);
                 }
 

@@ -45,22 +45,17 @@ namespace Client.Services.Network
 
         private string _file_path_transfer = "E:\\Курсова\\Client\\Client\\Client\\Services\\FileSend\\FileBuff";
         private int file_port = 63001;
+
+        private int Aviable_server_port = 0;
         #endregion
 
         #region Consructor
-        /// <summary>
-        /// Connect to server
-        /// </summary>
-        /// <param name="port"></param>
-        /// <param name="serverAddress"></param>
-        /// <param name="userName"></param>
         public ChatClient(int port, string serverAddress, string email, string password, string IP)
         {
             try
             {
                 server = new TcpClient(serverAddress, port);
                 IsConnected = true;
-                // Creating new udp client socket
                 clientSocket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Dgram, ProtocolType.Udp);
                 localEndPoint = GetHostEndPoint();
@@ -81,7 +76,6 @@ namespace Client.Services.Network
             {
                 server = new TcpClient(serverAddress, port);
                 IsConnected = true;
-                // Creating new udp client socket
                 clientSocket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Dgram, ProtocolType.Udp);
                 localEndPoint = GetHostEndPoint();
@@ -185,29 +179,35 @@ namespace Client.Services.Network
             {
                 Console.WriteLine(data.Command.ToString());
             }
-        }
-
-        private string ParseFileExtension(string fileName)
-        {
-            return System.IO.Path.GetExtension(fileName);
-        }
-
-        private void ParseResponse(string user, Command response, string address)
-        {
-            switch (response)
+            else if (data.Command == Command.Accept_Port)
             {
-
+                Aviable_server_port = int.Parse(data.Message);
             }
-        }
-        private void ReceiveUdpData()
-        {
-
-
+            else if (data.Command == Command.Accept_File)
+            {
+                //TODO зберігати ін меморі або хз файл зробити хуй зна (назва файлу)
+            }
         }
 
         private void SendComamnd(Data data)
         {
             server.Client.Send(data.ToBytes());
+        }
+        public bool GetFile(string filename)
+        {
+            if (Aviable_server_port == 0)
+            {
+                SendComamnd(new Data(Command.Accept_Port, Id.ToString(), "Server", IP, ""));
+                return false;
+            }
+            else
+            {
+                SendComamnd(new Data(Command.Send_File, Id.ToString(), "Server", IP, filename + " " + Aviable_server_port.ToString()));
+                Thread.Sleep(1500);
+                FileTool.ReceiverFile(ServerAddress, Aviable_server_port, filename);
+                Aviable_server_port = 0;
+                return true;
+            }
         }
         public void SendFile(string filename, int friend_ID)
         {

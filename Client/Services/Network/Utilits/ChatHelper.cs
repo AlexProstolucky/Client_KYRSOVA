@@ -57,20 +57,12 @@ namespace Client.Services.Network.Utilits
             public StringBuilder Sb = new StringBuilder();
         }
 
-        //public static void WriteToEventLog(string message, EventLogEntryType type)
-        //{
-        //    EventLog.WriteEntry(Log.ApplicationName, message, type);
-        //}
-
         public static string ChatWith(string name)
         {
             return string.Format("** Conversation with {0} **\n", name);
         }
     }
 
-    /// <summary>
-    /// Data structure to interact with server
-    /// </summary>
     internal class Data
     {
         public Command Command { get; set; }
@@ -106,9 +98,7 @@ namespace Client.Services.Network.Utilits
         }
     }
 
-    /// <summary>
-    /// List of availlable commands
-    /// </summary>
+
     public enum Command
     {
         Good_Auth, // Успішний вхід
@@ -130,10 +120,6 @@ namespace Client.Services.Network.Utilits
         Null,
     }
 
-
-    /// <summary>
-    /// Represents connected client
-    /// </summary>
     public class ConnectedClient
     {
         private readonly string userName;

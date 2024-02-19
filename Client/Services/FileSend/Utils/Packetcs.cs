@@ -38,7 +38,6 @@ namespace Client.Services.FileSend.Utils
         {
             PacketType = BitConverter.ToUInt32(bytes, 0);
 
-            // Payload starts at byte 4
             Payload = new byte[bytes.Length - 4];
             bytes.Skip(4).ToArray().CopyTo(Payload, 0);
         }
