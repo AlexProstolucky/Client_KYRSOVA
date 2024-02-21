@@ -1,4 +1,5 @@
-﻿using Client.Services.FileSend;
+﻿using Client.Services.Audio;
+using Client.Services.FileSend;
 using Client.Services.Network.Utilits;
 using System.Net;
 using System.Net.Sockets;
@@ -45,7 +46,7 @@ namespace Client.Services.Network
 
         private string _file_path_transfer = "E:\\Курсова\\Client\\Client\\Client\\Services\\FileSend\\FileBuff";
         private int file_port = 63001;
-
+        private VoiceCallHandler voiceCallHandler;
         private int Aviable_server_port = 0;
         #endregion
 
@@ -187,8 +188,50 @@ namespace Client.Services.Network
             {
                 //TODO зберігати ін меморі або хз файл зробити хуй зна (назва файлу)
             }
-        }
+            else if (data.Command == Command.Cancel_Call)
+            {
+                voiceCallHandler.StopReceive();
+                voiceCallHandler.StopSend();
+                Console.WriteLine(data.Command.ToString());
+            }
+            else if (data.Command == Command.Request_Call)
+            {
 
+                //чи юзер прийняв дзвінок
+
+                //yes
+                IPEndPoint ipEndPointReceive = new(IPAddress.Parse(""), 60202);// 60202
+                IPEndPoint ipEndPointSend = new(IPAddress.Parse(data.ClientAddress), 60201);// 60201
+                SendComamnd(new(Command.Accept_Call, data.To, data.From, IP, ""));
+                voiceCallHandler = new(ipEndPointReceive, ipEndPointSend);
+                voiceCallHandler.Receive();
+                voiceCallHandler.Send();
+
+            }
+            else if (data.Command == Command.Accept_Call)
+            {
+
+                IPEndPoint ipEndPointReceive = new(IPAddress.Parse(""), 60201);// 60201
+                IPEndPoint ipEndPointSend = new(IPAddress.Parse(data.ClientAddress), 60202);// 60202
+                voiceCallHandler = new(ipEndPointReceive, ipEndPointSend);
+                voiceCallHandler.Receive();
+                voiceCallHandler.Send();
+
+            }
+        }
+        public void TryCall(Guid friendGuid)
+        {
+
+            SendComamnd(new Data(Command.Request_Call, Id.ToString(), friendGuid.ToString(), IP, ""));
+
+        }
+        public void EndCall(Guid friendGuid)
+        {
+
+            SendComamnd(new Data(Command.Cancel_Call, Id.ToString(), friendGuid.ToString(), IP, ""));
+            voiceCallHandler.Receive();
+            voiceCallHandler.Send();
+        }
         private void SendComamnd(Data data)
         {
             server.Client.Send(data.ToBytes());
