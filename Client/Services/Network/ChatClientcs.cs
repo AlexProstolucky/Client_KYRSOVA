@@ -108,7 +108,7 @@ namespace Client.Services.Network
                 return null;
             var random = new Random();
             var endPoint = new IPEndPoint(ipAddress, random.Next(65000, 65536));
-            IP = "127.0.0.1";
+            IP = "26.144.152.222";
             //IP = $"{endPoint.Address}:{endPoint.Port}";
             return endPoint;
         }
@@ -167,6 +167,7 @@ namespace Client.Services.Network
             if (data.Command == Command.Good_Auth)
             {
                 Console.WriteLine(data.Command.ToString());
+                Id = Guid.Parse(data.Message);
             }
             else if (data.Command == Command.Bad_Auth)
             {
@@ -200,9 +201,9 @@ namespace Client.Services.Network
                 //чи юзер прийняв дзвінок
 
                 //yes
-                IPEndPoint ipEndPointReceive = new(IPAddress.Parse(""), 60202);// 60202
+                IPEndPoint ipEndPointReceive = new(IPAddress.Parse("127.0.0.1"), 60202);// 60202
                 IPEndPoint ipEndPointSend = new(IPAddress.Parse(data.ClientAddress), 60201);// 60201
-                SendComamnd(new(Command.Accept_Call, data.To, data.From, IP, ""));
+                SendComamnd(new(Command.Accept_Call, data.To, data.From, IP, "a"));
                 voiceCallHandler = new(ipEndPointReceive, ipEndPointSend);
                 voiceCallHandler.Receive();
                 voiceCallHandler.Send();
@@ -211,7 +212,7 @@ namespace Client.Services.Network
             else if (data.Command == Command.Accept_Call)
             {
 
-                IPEndPoint ipEndPointReceive = new(IPAddress.Parse(""), 60201);// 60201
+                IPEndPoint ipEndPointReceive = new(IPAddress.Parse("127.0.0.1"), 60201);// 60201
                 IPEndPoint ipEndPointSend = new(IPAddress.Parse(data.ClientAddress), 60202);// 60202
                 voiceCallHandler = new(ipEndPointReceive, ipEndPointSend);
                 voiceCallHandler.Receive();
@@ -222,13 +223,13 @@ namespace Client.Services.Network
         public void TryCall(Guid friendGuid)
         {
 
-            SendComamnd(new Data(Command.Request_Call, Id.ToString(), friendGuid.ToString(), IP, ""));
+            SendComamnd(new Data(Command.Request_Call, Id.ToString(), friendGuid.ToString(), IP, "a"));
 
         }
         public void EndCall(Guid friendGuid)
         {
 
-            SendComamnd(new Data(Command.Cancel_Call, Id.ToString(), friendGuid.ToString(), IP, ""));
+            SendComamnd(new Data(Command.Cancel_Call, Id.ToString(), friendGuid.ToString(), IP, "a"));
             voiceCallHandler.Receive();
             voiceCallHandler.Send();
         }
