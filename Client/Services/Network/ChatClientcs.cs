@@ -36,7 +36,7 @@ namespace Client.Services.Network
         public string Password { get; set; }
         public string NickName { get; set; }
 
-        public List<Guid> Friends { get; set; } = new List<Guid>();
+        Dictionary<Guid, string> Friends = new();
         public string IP { get; set; }
         #endregion
         public string ServerAddress { get; set; }
@@ -59,7 +59,7 @@ namespace Client.Services.Network
                 IsConnected = true;
                 clientSocket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Dgram, ProtocolType.Udp);
-                localEndPoint = GetHostEndPoint();
+                localEndPoint = GetHostEndPoint(IP);
                 ServerAddress = serverAddress;
             }
             catch (SocketException)
@@ -79,7 +79,7 @@ namespace Client.Services.Network
                 IsConnected = true;
                 clientSocket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Dgram, ProtocolType.Udp);
-                localEndPoint = GetHostEndPoint();
+                localEndPoint = GetHostEndPoint(IP);
                 ServerAddress = serverAddress;
             }
             catch (SocketException)
@@ -100,7 +100,7 @@ namespace Client.Services.Network
                 clientSocket.Bind(localEndPoint);
         }
 
-        private IPEndPoint GetHostEndPoint()
+        private IPEndPoint GetHostEndPoint(string ip)
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             var ipAddress = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
@@ -108,7 +108,7 @@ namespace Client.Services.Network
                 return null;
             var random = new Random();
             var endPoint = new IPEndPoint(ipAddress, random.Next(65000, 65536));
-            IP = "26.144.152.222";
+            IP = ip;
             //IP = $"{endPoint.Address}:{endPoint.Port}";
             return endPoint;
         }
@@ -167,7 +167,16 @@ namespace Client.Services.Network
             if (data.Command == Command.Good_Auth)
             {
                 Console.WriteLine(data.Command.ToString());
-                Id = Guid.Parse(data.Message);
+                string[] parts = data.Message.Split(' ');
+                Id = Guid.Parse(parts[0]);
+                NickName = parts[1];
+                //if (int.Parse(parts[2]) != 0)
+                //{
+                //    for (int i = 0; i < int.Parse(parts[2]); i++)
+                //    {
+                //        Friends.Add(Guid.Parse(parts[3 + i]));
+                //    }
+                //}
             }
             else if (data.Command == Command.Bad_Auth)
             {
@@ -253,7 +262,13 @@ namespace Client.Services.Network
                 return true;
             }
         }
-        public void SendFile(string filename, int friend_ID)
+
+        public void SendMessage(string message, Guid friend_ID)
+        {
+            Data data = new(Command.Send_Message, Id.ToString(), friend_ID.ToString(), IP, message);
+            SendComamnd(data);
+        }
+        public void SendFile(string filename, Guid friend_ID)
         {
             Data data = new(Command.Accept_File, Id.ToString(), friend_ID.ToString(), IP, filename);
             SendComamnd(data);
