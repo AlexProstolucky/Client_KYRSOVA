@@ -119,6 +119,11 @@ namespace Client.Services.Network.Utilits
         Reg, // Реєстрація
         UserNotConnected, // Коли коритсувач хоче зробити будь яку команду, а іншого користувача немає, відправляєм ось цю команду, далі в переписці це буде відображатись
         Null,
+        FriendRequest,// відправлення запиту на дружбу
+        AcceptFriendRequest,// прийом запиту на дружбу
+        DeclineFriendRequest,// відмова від запиту на дружбу
+        NewFriend,// щоб інший юзер оновив UI
+
     }
 
     public class ConnectedClient

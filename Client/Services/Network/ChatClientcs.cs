@@ -228,17 +228,41 @@ namespace Client.Services.Network
                 voiceCallHandler.Send();
 
             }
+            else if (data.Command == Command.FriendRequest)
+            {
+
+                //refresh UI появився новий реквест
+
+
+            }
+            else if (data.Command == Command.NewFriend)
+            {
+
+                //refresh UI появився новий друг
+
+
+            }
+        }
+        public void DeclineFriendRequest(Guid friendGuid)
+        {
+            SendComamnd(new Data(Command.DeclineFriendRequest, Id.ToString(), friendGuid.ToString(), IP, ""));
+        }
+        public void AcceptFriendRequest(Guid friendGuid)
+        {
+            SendComamnd(new Data(Command.AcceptFriendRequest, Id.ToString(), friendGuid.ToString(), IP, ""));
+        }
+        public void SendFriendRequest(Guid friendGuid)
+        {
+            SendComamnd(new Data(Command.FriendRequest, Id.ToString(), friendGuid.ToString(), IP, ""));
         }
         public void TryCall(Guid friendGuid)
         {
-
-            SendComamnd(new Data(Command.Request_Call, Id.ToString(), friendGuid.ToString(), IP, "a"));
-
+            SendComamnd(new Data(Command.Request_Call, Id.ToString(), friendGuid.ToString(), IP, ""));
         }
         public void EndCall(Guid friendGuid)
         {
 
-            SendComamnd(new Data(Command.Cancel_Call, Id.ToString(), friendGuid.ToString(), IP, "a"));
+            SendComamnd(new Data(Command.Cancel_Call, Id.ToString(), friendGuid.ToString(), IP, ""));
             voiceCallHandler.Receive();
             voiceCallHandler.Send();
         }
