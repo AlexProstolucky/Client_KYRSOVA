@@ -36,7 +36,8 @@ namespace Client.Services.Network
         public string Password { get; set; }
         public string NickName { get; set; }
 
-        Dictionary<Guid, string> Friends = new();
+        public Dictionary<Guid, string> Friends { get; set; } = new();
+        public Dictionary<Guid, string> FriendsRequests { get; set; } = new();
         public string IP { get; set; }
         #endregion
         public string ServerAddress { get; set; }
@@ -170,13 +171,31 @@ namespace Client.Services.Network
                 string[] parts = data.Message.Split(' ');
                 Id = Guid.Parse(parts[0]);
                 NickName = parts[1];
-                //if (int.Parse(parts[2]) != 0)
-                //{
-                //    for (int i = 0; i < int.Parse(parts[2]); i++)
-                //    {
-                //        Friends.Add(Guid.Parse(parts[3 + i]));
-                //    }
-                //}
+                int countFriends = int.Parse(parts[2]);
+                int secondData = 3;
+                if (countFriends > 0)
+                {
+                    for (int step = 3, i = 0; i < countFriends; step += 2, i++)
+                    {
+                        Friends.Add(Guid.Parse(parts[step]), parts[step + 1]);
+                        secondData += 2;
+                    }
+
+                    if (int.Parse(parts[secondData]) > 0)
+                    {
+                        for (int step = secondData + 1, i = 0; i < int.Parse(parts[secondData]); step += 2, i++)
+                        {
+                            FriendsRequests.Add(Guid.Parse(parts[step]), parts[step + 1]);
+                        }
+                    }
+                }
+                else if (int.Parse(parts[secondData]) > 0)
+                {
+                    for (int step = 4, i = 0; i < int.Parse(parts[secondData]); step += 2, i++)
+                    {
+                        FriendsRequests.Add(Guid.Parse(parts[step]), parts[step + 1]);
+                    }
+                }
             }
             else if (data.Command == Command.Bad_Auth)
             {
